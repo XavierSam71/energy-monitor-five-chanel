@@ -1,0 +1,234 @@
+esphome:
+  name: energymonitor5chanel
+  platform: ESP32
+  board: esp32dev
+
+ota:
+  password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Energymonitor5Chanel"
+    password: !secret ap_password
+
+captive_portal:
+
+# Enable logging
+logger:
+#  level: ERROR
+  baud_rate: 0
+  hardware_uart: UART1
+# Enable Home Assistant API
+api:
+
+
+#mqtt:
+#  broker: !secret mqtt_broker
+#  username: !secret mqtt_user
+#  password: !secret mqtt_password
+#  topic_prefix: energia
+
+spi:
+  clk_pin: GPIO18
+  mosi_pin: GPIO23
+  miso_pin: GPIO19
+
+uart:
+  - id: ubus
+    rx_pin: GPIO3
+    tx_pin: GPIO1
+    baud_rate: 9600
+    stop_bits: 1
+
+modbus:
+  id: mbus
+  uart_id: ubus
+
+graph:
+  - id: single_voltage_graph
+    sensor: currentl1
+    duration: 15min
+    width: 128
+    height: 50
+    line_type: SOLID
+    color: my_blue
+    x_grid: 1min
+  - id: multi_L2_graph
+    duration: 1h
+    x_grid: 10min
+    
+    width: 128
+    height: 50
+    traces:
+      - sensor: currentl2
+        line_type: DASHED
+        line_thickness: 2
+        color: my_red
+      - sensor: voltagel2
+        line_type: SOLID
+        line_thickness: 3
+        color: my_blue
+      - sensor: powerl2
+        line_type: DOTTED
+        line_thickness: 2
+        color: my_green
+  
+color:
+  - id: my_red
+    red: 100%
+    green: 0%
+    blue: 0%
+  - id: my_green
+    red: 0%
+    green: 100%
+    blue: 0%
+  - id: my_blue
+    red: 0%
+    green: 0%
+    blue: 100%
+  - id: my_yellow
+    red: 100%
+    green: 100%
+    blue: 0%
+
+
+font:
+  - file: "fonts/arial.ttf"
+    id: arial
+    size: 10
+
+display:
+  - platform: st7735
+    model: "INITR_18BLACKTAB"
+    reset_pin: GPIO17
+    cs_pin: GPIO32
+    dc_pin: GPIO27
+    rotation: 0
+    device_width: 128
+    device_height: 160
+    col_start: 0
+    row_start: 0
+    eight_bit_color: true
+    update_interval: 5s
+
+    lambda: |-
+      it.printf(0,  0, id(arial), "L1 %.0fV  %.3fA  %.3fW", id(voltagel1).state, id(currentl1).state, id(powerl1).state);
+      it.printf(0, 10, id(arial), "L2 %.0fV  %.3fA  %.3fW", id(voltagel2).state, id(currentl2).state, id(powerl2).state);
+      it.printf(0, 20, id(arial), "L3 %.0fV  %.3fA  %.3fW", id(voltagel3).state, id(currentl3).state, id(powerl3).state);
+      it.printf(0, 30, id(arial), "L4 %.0fV  %.3fA  %.3fW", id(voltagel4).state, id(currentl4).state, id(powerl4).state);
+      it.printf(0, 40, id(arial), "L5 %.0fV  %.3fA  %.3fW", id(voltagel5).state, id(currentl5).state, id(powerl5).state);
+      it.graph(0, 110, id(single_voltage_graph), my_yellow);
+      it.graph(0, 55, id(multi_L2_graph));
+
+
+sensor:
+  - platform: pzemac
+    modbus_id: mbus
+    update_interval: 3s
+    address: 1
+    current:
+      name: "L1 Current"
+      id: currentl1
+    voltage:
+      name: "L1 Voltage"
+      id: voltagel1
+    energy:
+      name: "L1 Energy"
+      id: energyl1
+    power:
+      name: "L1 Power"
+      id: powerl1
+    frequency:
+      name: "L1 Frequency"
+      id: frequencyl1
+    power_factor:
+      name: "L1 Power Factor"
+      id: powerfactorl1
+
+  - platform: pzemac
+    modbus_id: mbus
+    update_interval: 13s
+    address: 2
+    current:
+      name: "L2 Current"
+      id: currentl2
+    voltage:
+      name: "L2 Voltage"
+      id: voltagel2
+    energy:
+      name: "L2 Energy"
+      id: energyl2
+    power:
+      name: "L2 Power"
+      id: powerl2
+    frequency:
+      name: "L2 Frequency"
+    power_factor:
+      name: "L2 Power Factor"
+
+  - platform: pzemac
+    modbus_id: mbus
+    update_interval: 5s
+    address: 3
+    current:
+      name: "L3 Current"
+      id: currentl3
+    voltage:
+      name: "L3 Voltage"
+      id: voltagel3
+    energy:
+      name: "L3 Energy"
+      id: energyl3
+    power:
+      name: "L3 Power"
+      id: powerl3
+    frequency:
+      name: "L3 Frequency"
+    power_factor:
+      name: "L3 Power Factor"
+
+  - platform: pzemac
+    modbus_id: mbus
+    update_interval: 7s
+    address: 4
+    current:
+      name: "L4 Current"
+      id: currentl4
+    voltage:
+      name: "L4 Voltage"
+      id: voltagel4
+    energy:
+      name: "L4 Energy"
+      id: energyl4
+    power:
+      name: "L4 Power"
+      id: powerl4
+    frequency:
+      name: "L4 Frequency"
+    power_factor:
+      name: "L4 Power Factor"
+      
+  - platform: pzemac
+    modbus_id: mbus
+    update_interval: 11s
+    address: 5
+    current:
+      name: "L5 Current"
+      id: currentl5
+    voltage:
+      name: "L5 Voltage"
+      id: voltagel5
+    energy:
+      name: "L5 Energy"
+      id: energyl5
+    power:
+      name: "L5 Power"
+      id: powerl5
+    frequency:
+      name: "L5 Frequency"
+    power_factor:
+      name: "L5 Power Factor"      
