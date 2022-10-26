@@ -1,4 +1,4 @@
-# energy-monitor-five-chanel
+# energy-monitor-five-channel
 Energy monitor built with an ESP32 and five PZEM004T
 
 
